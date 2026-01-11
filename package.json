@@ -1,0 +1,40 @@
+{
+    "name": "copilot-model-switcher",
+    "displayName": "Copilot Model Switcher",
+    "description": "Quickly switch between Copilot models with keyboard shortcuts",
+    "version": "1.0.0",
+    "engines": {
+        "vscode": "^1.95.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [],
+    "main": "./extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "copilot-model-switcher.switchToSonnet45",
+                "title": "Switch to Claude Sonnet 4.5"
+            },
+            {
+                "command": "copilot-model-switcher.switchToGrok",
+                "title": "Switch to Grok Code Fast 1"
+            },
+            {
+                "command": "copilot-model-switcher.discoverCommands",
+                "title": "Discover Copilot Commands"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/node": "^20.19.28",
+        "@types/vscode": "^1.108.1",
+        "typescript": "^5.9.3"
+    }
+}

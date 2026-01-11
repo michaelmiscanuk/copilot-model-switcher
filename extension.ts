@@ -1,0 +1,102 @@
+import * as vscode from 'vscode';
+
+// Default model information from VS Code Copilot
+const DEFAULT_MODELS = {
+    SONNET_45: { vendor: 'copilot', id: 'claude-sonnet-4.5', family: 'claude-sonnet-4.5' },
+    GROK: { vendor: 'copilot', id: 'grok-code-fast-1', family: 'grok-code' }
+};
+
+async function switchToModel(context: vscode.ExtensionContext, modelInfo: { vendor: string; id: string; family: string }, modelName: string) {
+    try {
+        // Use the workbench command with the correct parameter format
+        await vscode.commands.executeCommand('workbench.action.chat.changeModel', modelInfo);
+        vscode.window.showInformationMessage(`✓ Switched to ${modelName}`);
+    } catch (error) {
+        vscode.window.showErrorMessage(`Failed to switch model: ${error}`);
+    }
+}
+
+async function switchToConfiguredModel(context: vscode.ExtensionContext, modelId: string) {
+    try {
+        // Get model info from available models
+        const models = await vscode.lm.selectChatModels();
+        const model = models.find(m => m.id === modelId);
+
+        if (!model) {
+            vscode.window.showErrorMessage(`Model "${modelId}" not found. Run "Discover Copilot Commands" to see available models.`);
+            return;
+        }
+
+        const modelInfo = { vendor: model.vendor, id: model.id, family: model.family };
+        await switchToModel(context, modelInfo, model.name);
+    } catch (error) {
+        vscode.window.showErrorMessage(`Failed to switch model: ${error}`);
+    }
+}
+
+export function activate(context: vscode.ExtensionContext) {
+    console.log('Copilot Model Switcher is now active');
+
+    // Discovery command to find available Copilot commands
+    const discoverCommands = vscode.commands.registerCommand(
+        'copilot-model-switcher.discoverCommands',
+        async () => {
+            const allCommands = await vscode.commands.getCommands(true);
+            const copilotCommands = allCommands.filter(cmd =>
+                cmd.includes('copilot') || cmd.includes('chat') || cmd.includes('model') || cmd.includes('Chat')
+            );
+
+            const output = vscode.window.createOutputChannel('Copilot Commands');
+            output.clear();
+            output.appendLine('=== All Copilot/Chat/Model-related commands ===');
+            output.appendLine(`Total found: ${copilotCommands.length}\n`);
+            copilotCommands.sort().forEach(cmd => output.appendLine(cmd));
+            output.show();
+
+            // Also try to get available language models
+            output.appendLine('\n=== Attempting to get available models ===');
+            try {
+                const models = await vscode.lm.selectChatModels();
+                output.appendLine(`Found ${models.length} models:`);
+                models.forEach(model => {
+                    output.appendLine(`  - ID: ${model.id}`);
+                    output.appendLine(`    Name: ${model.name}`);
+                    output.appendLine(`    Family: ${model.family}`);
+                    output.appendLine(`    Vendor: ${model.vendor}`);
+                    output.appendLine('');
+                });
+            } catch (e) {
+                output.appendLine(`Error getting models: ${e}`);
+            }
+
+            vscode.window.showInformationMessage(`Found ${copilotCommands.length} related commands. Check output panel.`);
+        }
+    );
+
+    // Legacy commands for backward compatibility
+    const switchToSonnet = vscode.commands.registerCommand(
+        'copilot-model-switcher.switchToSonnet45',
+        () => switchToModel(context, DEFAULT_MODELS.SONNET_45, 'Claude Sonnet 4.5')
+    );
+
+    const switchToGrok = vscode.commands.registerCommand(
+        'copilot-model-switcher.switchToGrok',
+        () => switchToModel(context, DEFAULT_MODELS.GROK, 'Grok Code Fast 1')
+    );
+
+    // New configurable command
+    const switchModel = vscode.commands.registerCommand(
+        'copilot-model-switcher.switchModel',
+        async (args?: { modelId: string }) => {
+            if (args?.modelId) {
+                await switchToConfiguredModel(context, args.modelId);
+            } else {
+                vscode.window.showErrorMessage('No model ID provided');
+            }
+        }
+    );
+
+    context.subscriptions.push(discoverCommands, switchToSonnet, switchToGrok, switchModel);
+}
+
+export function deactivate() {}
