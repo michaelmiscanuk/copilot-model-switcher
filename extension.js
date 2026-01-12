@@ -43,9 +43,12 @@ const DEFAULT_MODELS = {
 };
 async function switchToModel(context, modelInfo, modelName) {
     try {
+        // Show a temporary status bar message that disappears after 500ms
+        vscode.window.setStatusBarMessage(`Switching to ${modelName}...`, 500);
         // Use the workbench command with the correct parameter format
         await vscode.commands.executeCommand('workbench.action.chat.changeModel', modelInfo);
-        vscode.window.showInformationMessage(`✓ Switched to ${modelName}`);
+        // Show success message
+        vscode.window.setStatusBarMessage(`Switched to ${modelName}`, 500);
     }
     catch (error) {
         vscode.window.showErrorMessage(`Failed to switch model: ${error}`);
