@@ -2,13 +2,18 @@
     "name": "copilot-model-switcher",
     "displayName": "Copilot Model Switcher",
     "description": "Quickly switch between Copilot models with keyboard shortcuts",
-    "version": "1.0.0",
+    "version": "1.0.1",
+    "publisher": "MichaelMiscanuk",
     "engines": {
         "vscode": "^1.95.0"
     },
     "categories": [
         "Other"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/michaelmiscanuk/copilot-model-switcher.git"
+    },
     "activationEvents": [],
     "main": "./extension.js",
     "contributes": {
@@ -34,7 +39,7 @@
     },
     "devDependencies": {
         "@types/node": "^20.19.28",
-        "@types/vscode": "^1.108.1",
+        "@types/vscode": "^1.95.0",
         "typescript": "^5.9.3"
     }
 }
